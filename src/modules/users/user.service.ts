@@ -456,26 +456,31 @@ export const userService = {
   },
 
   /** Public followers list of any profile (ACCEPTED followers only). */
-  followers: (
+  followers: async (
     username: string,
     cursor: string | undefined,
     limit: number,
     viewerId?: string
-  ) =>
-    findOrFail(username).then(t =>
-      relationList(viewerId, t.id, 'followers', limit, cursor)
-    ),
+  ) => {
+    const t = await findOrFail(username)
+    if (t.privacy !== 'PUBLIC' && !(await isAcceptedFollower(viewerId, t.id))) {
+      throw ApiError.forbidden('This account is private')
+    }
+    return relationList(viewerId, t.id, 'followers', limit, cursor)
+  },
 
-  /** Public following list of any profile (people they follow, ACCEPTED only). */
-  following: (
+  following: async (
     username: string,
     cursor: string | undefined,
     limit: number,
     viewerId?: string
-  ) =>
-    findOrFail(username).then(t =>
-      relationList(viewerId, t.id, 'following', limit, cursor)
-    ),
+  ) => {
+    const t = await findOrFail(username)
+    if (t.privacy !== 'PUBLIC' && !(await isAcceptedFollower(viewerId, t.id))) {
+      throw ApiError.forbidden('This account is private')
+    }
+    return relationList(viewerId, t.id, 'following', limit, cursor)
+  },
 
   /** Followers eligible for messaging (accepted followers of me). */
   async messageableFollowers(viewerId: string) {
