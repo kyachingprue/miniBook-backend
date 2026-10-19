@@ -26,6 +26,10 @@ export function createApp() {
   app.use(cookieParser())
   if (!env.isProd) app.use(morgan('dev'))
 
+  app.get('/', (_req, res) => {
+    res.json({ success: true, message: 'Mini Book API is running' })
+  })
+  
   app.use('/api', apiLimiter, routes)
 
   app.use(notFound)
